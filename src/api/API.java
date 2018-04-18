@@ -6,6 +6,8 @@ import org.apache.commons.csv.CSVRecord;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
+import java.text.Format;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -26,12 +28,12 @@ public class API{
             e.printStackTrace();
         }
 
-        // parse the file
+        // parse the file with the CSV parsing library
         Reader reader = null;
         try{
             reader = new BufferedReader(new FileReader(filename));
-
-        reader.skip(1);
+            // skip the header line
+            reader.skip(1);
         for(CSVRecord record : CSVFormat.DEFAULT.parse(reader)){
             String dateTime = record.get(15);
             String type = record.get(18);
@@ -58,14 +60,35 @@ public class API{
         return crimes;
     }
 
+
+    /**
+     * Truncate a double to only display 2 decimal places
+     */
+    private static Object truncateDouble(double input){
+        Format format = new DecimalFormat("#.##");
+        return format.format(input);
+    }
+
+
     public static void main(String[] args){
 
         ArrayList<Crime> crimes = accessAPI();
 
-        Collections.sort(crimes, new DistanceComparator(43.000558, -78.783778));
+        // Use to sort by time
+//        Collections.sort(crimes, new DateCompare());
+
+        // sort by distance from UB
+        double latitudeUB = 43.000558;
+        double longitudeUB = -78.783778;
+
+        DistanceComparator distanceToUB = new DistanceComparator(latitudeUB, longitudeUB);
+        Collections.sort(crimes, distanceToUB);
+
         for(Crime crime : crimes){
-            System.out.println(crime);
+            double distance = distanceToUB.distance(crime.getLatitude(), crime.getLongitude());
+            System.out.println(truncateDouble(distance) + " km | " + crime);
         }
+
     }
 
 }

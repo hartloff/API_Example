@@ -48,6 +48,7 @@ public class Crime{
 
     @Override
     public String toString(){
-        return type + " on " + dateTime + " @ (" + latitude + ", " + longitude + ")";
+        return type + " on " + dateTime + " @ (" + latitude + ", " + longitude + ") " +
+                "http://maps.google.com/maps?t=m&q=loc:" + latitude + "+" + longitude;
     }
 }

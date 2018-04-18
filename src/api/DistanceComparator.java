@@ -4,18 +4,43 @@ import java.util.Comparator;
 
 public class DistanceComparator implements Comparator<Crime>{
 
-    private double latitude;
-    private double longitude;
+    private double referenceLatitude;
+    private double referenceLongitude;
 
     public DistanceComparator(double latitude, double longitude){
-        this.latitude = latitude;
-        this.longitude = longitude;
+        this.referenceLatitude = latitude;
+        this.referenceLongitude = longitude;
     }
 
-    private double distance(double latitude, double longitude){
-        return Math.sqrt(Math.pow(latitude - this.latitude, 2.0) +
-                Math.pow(longitude - this.longitude, 2.0));
+
+    /**
+     * Returns the distance from the input location from the reference
+     * location (stored in the instance variables) in kilometers
+     *
+     * @param inputLatitude  latitude of the input location
+     * @param inputLongitude longitude of the input location
+     * @return distance from reference location in kilometers
+     */
+    public double distance(double inputLatitude, double inputLongitude){
+        // Updated to return Great-Circle Distance
+        // ref: https://www.movable-type.co.uk/scripts/latlong.html
+
+        double radiusOfEarth = 6371000.0;
+
+        double deltaLatitude = Math.toRadians(inputLatitude - this.referenceLatitude);
+        double deltaLongitude = Math.toRadians(inputLongitude - this.referenceLongitude);
+
+        double a = Math.pow(Math.sin(deltaLatitude / 2.0), 2.0) +
+                Math.cos(Math.toRadians(this.referenceLatitude)) * Math.cos(Math.toRadians(inputLatitude)) *
+                        Math.pow(Math.sin(deltaLongitude / 2.0), 2.0);
+
+        double c = 2.0 * Math.atan2(Math.sqrt(a), Math.sqrt(1.0-a));
+
+        double d = radiusOfEarth * c;
+
+        return d/1000.0;
     }
+
 
     @Override
     public int compare(Crime o1, Crime o2){
